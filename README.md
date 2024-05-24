@@ -6,4 +6,4 @@ In order to use this plugin you will need to create a webhook on your discord se
 
 1. Open your Server Settings and head into the Integrations tab
 2. Click the "Create Webhook" button to create a new webhook
-3. Once created, copy the webhook URL and insert into the "Webhook URL" box in the plugin's configuration in RuneLite.
+3. Once created, copy the webhook URL and insert into the "Discord Webhook URL" box in the plugin's configuration in RuneLite.
