@@ -1,3 +1,5 @@
+<h1>IF YOU EVER FIND THIS, USE <a href="https://github.com/pajlads/DinkPlugin">Dink</a></h1>
+
 # Discord Kill count and Xp Notifier
 
 This RuneLite plugin sends a notification to a discord Server each time an XP threshold is passed, if a level 99 is achieved or if you get a boss kill count.
