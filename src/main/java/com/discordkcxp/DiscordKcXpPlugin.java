@@ -26,14 +26,7 @@ import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.api.Skill;
 
-
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.FormBody;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
+import okhttp3.*;
 
 @Slf4j
 @PluginDescriptor(
@@ -51,7 +44,8 @@ public class DiscordKcXpPlugin extends Plugin
 	private int previousTotalXp = 0;
 	private final Map<Skill, Integer> previousSkillLevels = new EnumMap<>(Skill.class);
 
-	private final OkHttpClient httpClient = new OkHttpClient();
+	@Inject
+	private OkHttpClient okHttpClient;
 
 	@Provides
 	DiscordKcXpConfig provideConfig(ConfigManager configManager)
@@ -70,7 +64,7 @@ public class DiscordKcXpPlugin extends Plugin
 	@Override
 	protected void shutDown() throws Exception
 	{
-		httpClient.dispatcher().executorService().shutdown();
+		okHttpClient.dispatcher().executorService().shutdown();
 		log.info("Discord KC XP - stopped!");
 	}
 
@@ -208,7 +202,7 @@ public class DiscordKcXpPlugin extends Plugin
 				.post(body)
 				.build();
 
-		httpClient.newCall(request).enqueue(new Callback()
+		okHttpClient.newCall(request).enqueue(new Callback()
 		{
 			@Override
 			public void onFailure(Call call, IOException e)
