@@ -103,60 +103,72 @@ public class DiscordKcXpPlugin extends Plugin
 	public void onStatChanged(StatChanged statChanged)
 	{
 
+		//Prevents a bug where a bunch of notifications get sent when the player logins
 		if (hasJustLoggedIn()){
 			return;
 		}
 
+		//Initialize PLayer name
 		String playerName = client.getLocalPlayer().getName();
-		int currentTotalXp = getTotalExperience();
-		int experienceThreshold = config.experienceThreshold();
-		int previousThreshold = previousTotalXp / experienceThreshold;
-		int currentThreshold = currentTotalXp / experienceThreshold;
 
-		if (currentThreshold > previousThreshold)
-		{
-			String message = String.format("%s's total XP just passed %d experience!", playerName, currentTotalXp);
-			log.info(message);
-			sendDiscordWebhook(message);
+		//Check if the Xp threshold has been passed
+		if(config.includeXpGains()){
+			int currentTotalXp = getTotalExperience();
+			int experienceThreshold = config.experienceThreshold();
+			int previousThreshold = previousTotalXp / experienceThreshold;
+			int currentThreshold = currentTotalXp / experienceThreshold;
+
+			if (currentThreshold > previousThreshold)
+			{
+				String message = String.format("%s's total XP just passed %d experience!", playerName, currentTotalXp);
+				log.info(message);
+				sendDiscordWebhook(message);
+			}
+
+			// Update the previous total XP and skill levels
+			previousTotalXp = currentTotalXp;
 		}
+
 
 		// Check for level 99 achievement
-		Skill skill = statChanged.getSkill();
-		int previousLevel = previousSkillLevels.getOrDefault(skill, 0);
-		int currentLevel = client.getRealSkillLevel(skill);
+		if(config.include99()){
+			Skill skill = statChanged.getSkill();
+			int previousLevel = previousSkillLevels.getOrDefault(skill, 0);
+			int currentLevel = client.getRealSkillLevel(skill);
 
-		if (currentLevel == 99 && previousLevel < 99)
-		{
-			String message = String.format("%s just achieved level 99 in %s!", playerName, skill.getName());
-			log.info(message);
-			sendDiscordWebhook(message);
+			if (currentLevel == 99 && previousLevel < 99)
+			{
+				String message = String.format("%s just achieved level 99 in %s!", playerName, skill.getName());
+				log.info(message);
+				sendDiscordWebhook(message);
+			}
+
+			previousSkillLevels.put(skill, currentLevel);
 		}
-
-		// Update the previous total XP and skill levels
-		previousTotalXp = currentTotalXp;
-		previousSkillLevels.put(skill, currentLevel);
 	}
 
 
 	@Subscribe
 	public void onChatMessage(ChatMessage chatMessage)
 	{
-		String playerName = client.getLocalPlayer().getName();
+		if(config.includeKillCount()){
+			String playerName = client.getLocalPlayer().getName();
 
-		if (chatMessage.getType() != ChatMessageType.GAMEMESSAGE)
-		{
-			return;
-		}
+			if (chatMessage.getType() != ChatMessageType.GAMEMESSAGE)
+			{
+				return;
+			}
 
-		String message = chatMessage.getMessage();
-		String regex = "Your .* count is:";
-		Pattern pattern = Pattern.compile(regex);
-		Matcher matcher = pattern.matcher(message);
+			String message = chatMessage.getMessage();
+			String regex = "Your .* count is:";
+			Pattern pattern = Pattern.compile(regex);
+			Matcher matcher = pattern.matcher(message);
 
-		if (matcher.find())
-		{
-			log.info("Kill count message detected: {}", message);
-			sendDiscordWebhook(String.format("%s kill count update: %s", playerName, message));
+			if (matcher.find())
+			{
+				log.info("Kill count message detected: {}", message);
+				sendDiscordWebhook(String.format("%s kill count update: %s", playerName, message));
+			}
 		}
 	}
 
